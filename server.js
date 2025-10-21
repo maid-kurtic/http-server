@@ -7,7 +7,7 @@ const port = 80;
 
 const definitions = {
   function:
-    "A function is a block of code designed to perform a particular task. Example: function greet() { console.log('Hello'); }",
+    "A function is a block of code designed to perform a particular task. Example: function greet() { console.log('Hello'); } ............",
   object:
     "An object is a collection of properties, where each property is a key-value pair. Example: const obj = {name: 'John', age: 30};",
   array:
