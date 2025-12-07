@@ -1,0 +1,131 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dev.Dockerfile
+    container_name: next_frontend
+    restart: unless-stopped # Changed from 'always'
+    ports:
+      - "3001:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3000"
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - server
+    networks:
+      - backend
+  db:
+    image: postgres:16
+    container_name: myusers
+    restart: always
+    env_file:
+      - http-server/env/db.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  liquibase:
+    image: liquibase/liquibase:4.29
+    container_name: liquibase_migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./http-server/liquibase/migrations:/liquibase/changelog
+      - ./http-server/liquibase/liquibase.properties:/liquibase/liquibase.properties
+    networks:
+      - backend
+    command: --defaults-file=/liquibase/liquibase.properties update
+
+  server:
+    build:
+      context: ./http-server
+      dockerfile: Dockerfile
+    container_name: node_server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    env_file:
+      - http-server/env/node.env
+    volumes:
+      - ./http-server:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
+    networks:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    networks:
+      - backend
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis_commander
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - backend
+
+volumes:
+  db_data:
+  redis_data:
+  pgadmin_data:
+
+networks:
+  backend:

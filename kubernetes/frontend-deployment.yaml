@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: maidkurtic/frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: NEXT_PUBLIC_API_URL
+            - name: NODE_ENV
+              value: "production"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 80 # Service port
+      targetPort: 3000 # Pod container port
+      nodePort: 30081 # NodePort for external access
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  NEXT_PUBLIC_API_URL: "http://http-server-lb-653748718.us-east-1.elb.amazonaws.com"

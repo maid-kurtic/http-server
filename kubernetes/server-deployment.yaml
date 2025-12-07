@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs
+  template:
+    metadata:
+      labels:
+        app: nodejs
+    spec:
+      containers:
+        - name: nodejs
+          image: maidkurtic/http-server:latest
+          env:
+            - name: DB_HOST
+              value: "db"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "myusers"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASSWORD
+              value: "postgrespassword"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: SESSION_SECRET
+              value: "mysecretkey"
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: efs-storage
+              mountPath: /mnt/efs
+      volumes:
+        - name: efs-storage
+          persistentVolumeClaim:
+            claimName: efs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodejs-service
+spec:
+  selector:
+    app: nodejs
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 30080
