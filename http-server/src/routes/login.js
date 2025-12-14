@@ -1,4 +1,5 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 const router = express.Router();
 
 module.exports = ({ pool }) => {
@@ -9,12 +10,18 @@ module.exports = ({ pool }) => {
         username,
       ]);
 
-      if (result.rows.length === 0 || result.rows[0].password !== password) {
+      if (result.rows.length === 0) {
         return res
           .status(401)
-          .json({ message: "Invaliiiiiiiiiid username or password" });
+          .json({ message: "Invalid username or password" });
       }
-
+      const user = result.rows[0];
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res
+          .status(401)
+          .json({ message: "Invalid username and password" });
+      }
       req.session.user = username;
       res.json({ message: "Logged in" });
     } catch (err) {
