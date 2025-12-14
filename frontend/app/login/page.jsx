@@ -55,7 +55,11 @@ export default function LoginPage() {
         <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
           Login
         </button>
-
+        <p className="text-center mt-3 text-sm">
+          <a href="/forgot-password" className="text-blue-600">
+            Forgot Password?
+          </a>
+        </p>
         <p className="text-center mt-3 text-sm">
           Don’t have an account?
           <a href="/register" className="text-blue-600 ml-1">

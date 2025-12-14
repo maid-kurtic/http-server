@@ -11,5 +11,6 @@
     <include file="changelog/003-table-pass-username.xml"/>
     <include file="changelog/005-second-user.xml"/>
    <include file="changelog/006-email-adeed.xml"/>
+   <include file="changelog/007-added-reset.xml"/>
 </databaseChangeLog>
 

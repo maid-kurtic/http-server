@@ -7,12 +7,15 @@ const { RedisStore } = require("connect-redis");
 const { createClient } = require("redis");
 const { Pool } = require("pg");
 
+const forgetRoute = require("./routes/forgot-password");
+
 const registerRoute = require("./routes/register");
 const homePageRoute = require("./routes/homepage");
 const loginRoute = require("./routes/login");
 const logoutRoute = require("./routes/logout");
 const addUserRoute = require("./routes/adduser");
 const deleteUserRoute = require("./routes/deleteuser");
+const resetRoute = require("./routes/reset-password");
 
 const app = express();
 exports.app = app;
@@ -115,7 +118,8 @@ async function tryRedisConnection() {
   app.use("/", homePageRoute({ pool }));
   app.use("/add", addUserRoute({ pool }));
   app.use("/delete", deleteUserRoute({ pool }));
-
+  app.use("/forgot-password", forgetRoute({ pool }));
+  app.use("/reset-password", resetRoute({ pool }));
   // 404 handler
   app.use((req, res) => {
     res.status(404).send("Page not found");
