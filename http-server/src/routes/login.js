@@ -4,25 +4,21 @@ const router = express.Router();
 
 module.exports = ({ pool }) => {
   router.post("/", async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     try {
-      const result = await pool.query("SELECT * FROM users WHERE username=$1", [
-        username,
+      const result = await pool.query("SELECT * FROM users WHERE email=$1", [
+        email,
       ]);
 
       if (result.rows.length === 0) {
-        return res
-          .status(401)
-          .json({ message: "Invalid username or password" });
+        return res.status(401).json({ message: "Invalid e-mail or password" });
       }
       const user = result.rows[0];
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        return res
-          .status(401)
-          .json({ message: "Invalid username and password" });
+        return res.status(401).json({ message: "Invalid email and password" });
       }
-      req.session.user = username;
+      req.session.user = user.username;
       res.json({ message: "Logged in" });
     } catch (err) {
       console.error(err);
