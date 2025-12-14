@@ -1,6 +1,8 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const router = express.Router();
+const { sendWelcomeEmail } = require("../functions/sendEmail");
+
 module.exports = ({ pool }) => {
   router.post("/", async (req, res) => {
     const { username, password, email } = req.body;
@@ -32,6 +34,7 @@ module.exports = ({ pool }) => {
         "INSERT INTO users (username, password,email) VALUES ($1, $2,$3)",
         [username, hashedPassword, email]
       );
+      sendWelcomeEmail(email, username).catch(console.error);
 
       res.json({ message: "Registered successfully" });
     } catch (err) {

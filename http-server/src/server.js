@@ -19,8 +19,9 @@ exports.app = app;
 const port = 3000;
 
 const allowedOrigins = [
-  "http://localhost:3001", // your local dev browser
-  "http://172.19.0.7:3000", // frontend container IP
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://172.19.0.7:3000",
 ];
 
 app.use(

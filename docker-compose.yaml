@@ -80,6 +80,7 @@ services:
       NODE_ENV: development
     env_file:
       - http-server/env/node.env
+      - http-server/env/email.env
     volumes:
       - ./http-server:/app
       - /app/node_modules
