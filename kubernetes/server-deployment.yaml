@@ -30,6 +30,12 @@ spec:
               value: "redis://redis:6379"
             - name: SESSION_SECRET
               value: "mysecretkey"
+            - name: EMAIL_USER
+              value: "kurticmaid@gmail.com"
+            - name: EMAIL_PASS
+              value: "uldjuscygjjelwkk"
+            - name: FRONTEND_URL
+              value: "http://18.215.64.181:30081"
           ports:
             - containerPort: 3000
           volumeMounts:

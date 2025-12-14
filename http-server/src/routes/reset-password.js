@@ -30,7 +30,6 @@ module.exports = ({ pool }) => {
 
       res.json({ message: "Password updated successfully" });
     } catch (err) {
-      console.error("💥 ERROR:", err);
       res.status(500).json({ message: "Server error" });
     }
   });

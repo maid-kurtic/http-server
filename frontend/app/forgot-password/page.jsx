@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+export const dynamic = "force-dynamic";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
