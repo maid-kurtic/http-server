@@ -1,21 +1,54 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import ConfirmModal from "../../components/ConfirmModal";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = "http://localhost:3000";
 
 export default function HomePage() {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // For delete confirmation
+  const [deleteUserId, setDeleteUserId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const router = useRouter();
+
+  // Open modal
+  function confirmDelete(id) {
+    setDeleteUserId(id);
+    setIsModalOpen(true);
+  }
+
+  // Cancel deletion
+  function cancelDelete() {
+    setDeleteUserId(null);
+    setIsModalOpen(false);
+  }
+
+  // Delete user after confirmation
+  async function handleDeleteConfirmed() {
+    try {
+      await fetch(`${API_URL}/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: deleteUserId }),
+        credentials: "include",
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+    } finally {
+      cancelDelete();
+    }
+  }
 
   async function fetchUsers() {
     try {
-      const res = await fetch(`${API_URL}/`, {
-        credentials: "include",
-      });
+      const res = await fetch(`${API_URL}/`, { credentials: "include" });
       if (res.status === 401) return router.push("/login");
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
@@ -50,25 +83,9 @@ export default function HomePage() {
     }
   }
 
-  async function handleDelete(id) {
-    try {
-      await fetch(`${API_URL}/delete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-        credentials: "include",
-      });
-      fetchUsers();
-    } catch (error) {
-      console.error("Failed to delete user:", error);
-    }
-  }
-
   async function handleLogout() {
     try {
-      await fetch(`${API_URL}/logout`, {
-        credentials: "include",
-      });
+      await fetch(`${API_URL}/logout`, { credentials: "include" });
       router.push("/login");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -92,7 +109,7 @@ export default function HomePage() {
           <h1 className="text-3xl font-bold text-gray-800">Home Page</h1>
           <button
             onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded shadow transition"
+            className="cursor-pointer bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded shadow transition"
           >
             Logout
           </button>
@@ -116,8 +133,8 @@ export default function HomePage() {
                     {u.id}: {u.username}
                   </span>
                   <button
-                    onClick={() => handleDelete(u.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
+                    onClick={() => confirmDelete(u.id)}
+                    className="cursor-pointer bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
                   >
                     Delete
                   </button>
@@ -152,13 +169,21 @@ export default function HomePage() {
             />
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded shadow transition"
+              className="cursor-pointer bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded shadow transition"
             >
               Add User
             </button>
           </form>
         </div>
       </div>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onConfirm={handleDeleteConfirmed}
+        onCancel={cancelDelete}
+        message="Are you sure you want to delete this user?"
+      />
     </div>
   );
 }

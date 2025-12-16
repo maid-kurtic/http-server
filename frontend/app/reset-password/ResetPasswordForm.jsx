@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-
+const API_URL = "http://localhost:3000";
 export default function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState("");
 
@@ -23,14 +23,11 @@ export default function ResetPasswordForm() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/reset-password`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, newPassword }),
-      }
-    );
+    const res = await fetch(`${API_URL}/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, newPassword }),
+    });
 
     const data = await res.json();
     alert(data.message);

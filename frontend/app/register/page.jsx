@@ -1,23 +1,48 @@
 "use client";
 import { useState } from "react";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import { useRouter } from "next/navigation";
+import FormMessage from "../../components/FormMessage";
+
+const API_URL = "http://localhost:3000";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("error");
+
+  const router = useRouter();
 
   async function handleRegister(e) {
     e.preventDefault();
+    setMessage("");
 
-    const res = await fetch(`${API_URL}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, email }),
-    });
+    try {
+      const res = await fetch(`${API_URL}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, email }),
+      });
 
-    const data = await res.json();
-    alert(data.message || "Registered!");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessageType("error");
+        setMessage(data.message || "Registration failed");
+        return;
+      }
+
+      setMessageType("success");
+      setMessage("Registration successful. Redirecting...");
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+    } catch (err) {
+      setMessageType("error");
+      setMessage("Server error. Please try again.");
+    }
   }
 
   return (
@@ -50,7 +75,9 @@ export default function RegisterPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <button className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
+        <FormMessage message={message} type={messageType} />
+
+        <button className="cursor-pointer w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
           Create Account
         </button>
 

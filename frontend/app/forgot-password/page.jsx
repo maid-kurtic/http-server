@@ -1,20 +1,17 @@
 "use client";
 import { useState } from "react";
 export const dynamic = "force-dynamic";
-
+const API_URL = "http://18.215.64.181:30080";
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/forgot-password`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      }
-    );
+    const res = await fetch(`${API_URL}/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
 
     const data = await res.json();
     alert(data.message);

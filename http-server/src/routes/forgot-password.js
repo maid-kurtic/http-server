@@ -28,13 +28,11 @@ module.exports = ({ pool }) => {
         [token, expires, email]
       );
 
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-
+      const resetLink = `http://18.215.64.181:30081//reset-password?token=${token}`;
       await sendPasswordResetEmail(email, resetLink);
 
       res.json({ message: "Password reset link sent" });
     } catch (err) {
-      console.error("💥 ERROR:", err);
       res.status(500).json({ message: "Server error", error: err.message });
     }
   });

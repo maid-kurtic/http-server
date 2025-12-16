@@ -8,7 +8,6 @@ const { createClient } = require("redis");
 const { Pool } = require("pg");
 
 const forgetRoute = require("./routes/forgot-password");
-
 const registerRoute = require("./routes/register");
 const homePageRoute = require("./routes/homepage");
 const loginRoute = require("./routes/login");
@@ -24,21 +23,29 @@ const port = 3000;
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
-  "http://172.19.0.7:3000",
+  "http://18.215.64.181:30081",
+  "http://http-server-lb-653748718.us-east-1.elb.amazonaws.com",
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
+      console.log(`🔍 Request from origin: ${origin}`);
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log(`❌ CORS blocked origin: ${origin}`);
         callback(new Error(`CORS not allowed for origin: ${origin}`));
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -49,7 +56,6 @@ const pool = new Pool({
 });
 exports.pool = pool;
 
-// Redis client configuration
 const redisClient = createClient({
   url: process.env.REDIS_URL || "redis://redis:6379",
   socket: {
@@ -65,7 +71,6 @@ redisClient.on("error", (err) => console.error("❌ Redis Error:", err.message))
 redisClient.on("connect", () => console.log("🔄 Redis Connecting..."));
 redisClient.on("ready", () => console.log("✅ Redis Ready!"));
 
-// Try to connect to Redis with timeout
 async function tryRedisConnection() {
   try {
     await Promise.race([
@@ -83,10 +88,6 @@ async function tryRedisConnection() {
 (async () => {
   const redisConnected = await tryRedisConnection();
 
-  // Middleware
-  app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
-
   const sessionConfig = {
     secret: process.env.SESSION_SECRET || "mysecretkey",
     resave: false,
@@ -94,6 +95,8 @@ async function tryRedisConnection() {
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
+      secure: false,
+      path: "/",
     },
   };
 
@@ -102,7 +105,6 @@ async function tryRedisConnection() {
       client: redisClient,
       prefix: "sess:",
     });
-    console.log("✅ Using Redis for session storage");
   } else {
     console.log(
       "⚠️  Using in-memory session storage (sessions won't persist on restart)"
@@ -111,21 +113,19 @@ async function tryRedisConnection() {
 
   app.use(session(sessionConfig));
 
-  // Routes
   app.use("/register", registerRoute({ pool }));
-  app.use("/login", loginRoute({ pool }));
+  app.use("/login", loginRoute({ pool, redisClient }));
   app.use("/logout", logoutRoute());
   app.use("/", homePageRoute({ pool }));
   app.use("/add", addUserRoute({ pool }));
-  app.use("/delete", deleteUserRoute({ pool }));
+  app.use("/delete", deleteUserRoute({ pool, redisClient }));
   app.use("/forgot-password", forgetRoute({ pool }));
   app.use("/reset-password", resetRoute({ pool }));
-  // 404 handler
+
   app.use((req, res) => {
     res.status(404).send("Page not found");
   });
 
-  // Start server regardless of Redis status
   app.listen(port, () => {
     console.log(`🚀 Server running at http://0.0.0.0:${port}/`);
   });

@@ -1,30 +1,44 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import FormMessage from "../../components/FormMessage";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
+const API_URL = "http://localhost:3000";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("error");
   const router = useRouter();
 
   async function handleLogin(e) {
     e.preventDefault();
+    setMessage("");
 
-    const res = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-      credentials: "include",
-    });
+    try {
+      const res = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include",
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.status === 200) {
-      router.push("/home");
-    } else {
-      alert(data.message);
+      if (!res.ok) {
+        setMessageType("error");
+        setMessage("Invalid email or password.");
+        return;
+      }
+
+      setMessageType("success");
+      setMessage("You are logged in.");
+      setTimeout(() => {
+        router.push("/home");
+      }, 1500);
+    } catch (err) {
+      setMessageType("error");
+      setMessage("Server error. Please try again.");
     }
   }
 
@@ -51,8 +65,9 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <FormMessage message={message} type={messageType} />
 
-        <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+        <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition cursor-pointer">
           Login
         </button>
         <p className="text-center mt-3 text-sm">
