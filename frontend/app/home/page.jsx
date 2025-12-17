@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmModal from "../../components/ConfirmModal";
 
-const API_URL = "http://18.215.64.181:30080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function HomePage() {
   const [users, setUsers] = useState([]);

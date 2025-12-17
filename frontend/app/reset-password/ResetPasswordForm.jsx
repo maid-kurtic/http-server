@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import FormMessage from "../../components/FormMessage";
 
-const API_URL = "http://18.215.64.181:30080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState("");

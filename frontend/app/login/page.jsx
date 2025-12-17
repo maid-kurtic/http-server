@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FormMessage from "../../components/FormMessage";
 
-const API_URL = "http://18.215.64.181:30080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
