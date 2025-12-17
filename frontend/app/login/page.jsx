@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FormMessage from "../../components/FormMessage";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "http://18.215.64.181:30080";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +27,7 @@ export default function LoginPage() {
 
       if (!res.ok) {
         setMessageType("error");
-        setMessage("Invalid email or password.");
+        setMessage(data.message);
         return;
       }
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
       }, 1500);
     } catch (err) {
       setMessageType("error");
-      setMessage("Server error. Please try again.");
+      setMessage(data.message);
     }
   }
 

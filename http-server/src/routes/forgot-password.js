@@ -2,14 +2,12 @@ const express = require("express");
 const crypto = require("crypto");
 const router = express.Router();
 const { sendPasswordResetEmail } = require("../functions/sendEmail");
+const validateRequest = require("../middleware/validate");
+const { forgotPasswordSchema } = require("../schemas");
 
 module.exports = ({ pool }) => {
-  router.post("/", async (req, res) => {
+  router.post("/", validateRequest(forgotPasswordSchema), async (req, res) => {
     const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
-    }
 
     try {
       const result = await pool.query("SELECT * FROM users WHERE email=$1", [
@@ -17,7 +15,9 @@ module.exports = ({ pool }) => {
       ]);
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ message: "Email not found" });
+        return res
+          .status(404)
+          .json({ message: "User with this email doesn't exist" });
       }
 
       const token = crypto.randomBytes(32).toString("hex");

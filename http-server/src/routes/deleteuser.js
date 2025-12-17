@@ -3,7 +3,6 @@ const router = express.Router();
 const requireLogin = require("../functions/requirelogin");
 
 module.exports = ({ pool, redisClient }) => {
-  // Add redisClient to params
   router.post("/", requireLogin, async (req, res) => {
     const { id } = req.body;
 

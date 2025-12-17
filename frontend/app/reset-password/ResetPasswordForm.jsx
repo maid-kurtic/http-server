@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-const API_URL = "http://localhost:3000";
+import FormMessage from "../../components/FormMessage";
+
+const API_URL = "http://18.215.64.181:30080";
+
 export default function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("error");
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -13,9 +18,7 @@ export default function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="max-w-sm mx-auto mt-20 p-6 bg-red-100 rounded shadow">
-        <p className="text-red-800 text-center">
-          Token za resetovanje nedostaje.
-        </p>
+        <p className="text-red-800 text-center">Token is not avaliable</p>
       </div>
     );
   }
@@ -30,9 +33,16 @@ export default function ResetPasswordForm() {
     });
 
     const data = await res.json();
-    alert(data.message);
-
-    if (res.ok) router.push("/login");
+    if (!res.ok) {
+      setMessageType("error");
+      setMessage(data.message);
+      return;
+    }
+    setMessageType("success");
+    setMessage(data.message);
+    setTimeout(() => {
+      router.push("/login");
+    }, 1500);
   }
 
   return (
@@ -49,6 +59,8 @@ export default function ResetPasswordForm() {
         className="w-full p-3 mb-4 border rounded"
         required
       />
+      <FormMessage message={message} type={messageType} />
+
       <button className="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700">
         Update Password
       </button>

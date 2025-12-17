@@ -1,9 +1,11 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const router = express.Router();
+const validateRequest = require("../middleware/validate");
+const { loginSchema } = require("../schemas");
 
 module.exports = ({ pool, redisClient }) => {
-  router.post("/", async (req, res) => {
+  router.post("/", validateRequest(loginSchema), async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -20,7 +22,7 @@ module.exports = ({ pool, redisClient }) => {
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return res.status(401).json({ message: "Invalid email and password" });
+        return res.status(401).json({ message: "Invalid e-mail and password" });
       }
 
       req.session.userId = user.id;

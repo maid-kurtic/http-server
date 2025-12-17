@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FormMessage from "../../components/FormMessage";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "http://18.215.64.181:30080";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -34,7 +34,7 @@ export default function RegisterPage() {
       }
 
       setMessageType("success");
-      setMessage("Registration successful. Redirecting...");
+      setMessage("Registration successful.");
 
       setTimeout(() => {
         router.push("/login");
@@ -48,6 +48,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form
+        noValidate
         onSubmit={handleRegister}
         className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"
       >

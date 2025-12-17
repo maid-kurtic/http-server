@@ -6,7 +6,7 @@ export default function ResetPasswordPageWrapper() {
     <Suspense
       fallback={
         <div className="max-w-sm mx-auto mt-20 p-6 bg-gray-100 rounded shadow text-center">
-          Učitavanje forme za resetovanje lozinke...
+          Loading form...
         </div>
       }
     >

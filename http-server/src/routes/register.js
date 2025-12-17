@@ -2,22 +2,13 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const router = express.Router();
 const { sendWelcomeEmail } = require("../functions/sendEmail");
+const validateRequest = require("../middleware/validate");
+const { registerSchema } = require("../schemas");
 
 module.exports = ({ pool }) => {
-  router.post("/", async (req, res) => {
+  router.post("/", validateRequest(registerSchema), async (req, res) => {
     const { username, password, email } = req.body;
-    if (!username || !password || !email) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-    if (username.length <= 3 || password.length <= 3) {
-      return res
-        .status(400)
-        .json({ message: "Username or password is too short" });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
-    }
+
     try {
       const result = await pool.query("SELECT * FROM users WHERE username=$1", [
         username,
